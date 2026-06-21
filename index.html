@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Alis — PUC-Rio</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #F4F5F0;
+    --black: #000000;
+    --gray: #9A9582;
+    --yellow: #FFB530;
+    --yellow-mid: #DF8C06;
+    --yellow-dark: #C06000;
+    --blue: #4746FF;
+    --blue-dark: #0000A8;
+    --blue-deep: #030053;
+    --purple: #C11AFF;
+    --purple-mid: #7717B1;
+    --purple-dark: #3B0062;
+    --red: #FF0032;
+    --red-mid: #BE002D;
+    --red-dark: #7C0023;
+    --green: #69E700;
+    --green-mid: #00A800;
+    --green-dark: #003900;
+    --white: #FFFFFF;
+    --radius: 20px;
+    --radius-sm: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 24px rgba(0,0,0,0.12);
+  }
+
+  body {
+    background: #e8e8e8;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  /* PHONE SHELL */
+  .phone {
+    width: 393px;
+    height: 852px;
+    background: var(--bg);
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.3), 0 0 0 2px #333;
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    position: absolute;
+    top: 0; left: 0;
+    background: var(--bg);
+  }
+  .screen.active { display: flex; }
+
+  /* STATUS BAR */
+  .status-bar {
+    height: 44px;
+    padding: 12px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 600; color: var(--black); }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons span { font-size: 12px; }
+
+  /* TOP BAR */
+  .top-bar {
+    padding: 8px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .top-bar .logo { font-size: 22px; font-weight: 800; color: var(--black); letter-spacing: -0.5px; }
+  .top-bar .logo span { color: var(--yellow-mid); }
+  .top-bar-actions { display: flex; gap: 12px; align-items: center; }
+  .icon-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--white);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: transform 0.15s;
+  }
+  .icon-btn:active { transform: scale(0.93); }
+  .notif-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+  }
+
+  /* SCROLL CONTENT */
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 100px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 84px;
+    background: var(--white);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    border: none;
+    background: none;
+  }
+  .nav-item svg { transition: all 0.15s; }
+  .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { fill: var(--yellow-mid); }
+  .nav-item .nav-label { font-size: 10px; font-weight: 500; color: var(--gray); }
+  .nav-item.active .nav-label { color: var(--yellow-mid); }
+
+  /* CARDS */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+
+  /* ===== HOME SCREEN ===== */
+  .date-hero {
+    background: var(--yellow);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .date-hero .day-big {
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--black);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .date-hero .month { font-size: 20px; font-weight: 400; color: var(--black); opacity: 0.7; margin-left: 4px; }
+  .week-strip {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  .week-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .week-day .wd-name { font-size: 11px; font-weight: 500; color: rgba(0,0,0,0.5); }
+  .week-day .wd-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: var(--black);
+  }
+  .week-day.today .wd-num {
+    background: var(--black);
+    color: var(--yellow);
+  }
+
+  /* Events list */
+  .event-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+  }
+  .event-item:last-child { border-bottom: none; }
+  .event-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .event-info { flex: 1; }
+  .event-time { font-size: 11px; color: var(--gray); font-weight: 500; }
+  .event-name { font-size: 14px; font-weight: 600; color: var(--black); margin-top: 1px; }
+  .event-meta { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+  /* Alerts */
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: #FFF9EE;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    border-left: 3px solid var(--yellow);
+  }
+  .alert-item.urgent { background: #FFF0F2; border-left-color: var(--red); }
+  .alert-text { font-size: 13px; color: var(--black); line-height: 1.4; }
+  .alert-text strong { font-weight: 700; }
+  .alert-time { font-size: 11px; color: var(--gray); margin-top: 3px; }
+
+  /* Quick access */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .quick-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .quick-label { font-size: 10px; font-weight: 500; color: var(--gray); text-align: center; line-height: 1.3; }
+
+  /* ===== CALENDAR SCREEN ===== */
+  .cal-month-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cal-month-title { font-size: 20px; font-weight: 700; color: var(--black); }
+  .cal-nav-btn {
+    width: 32px; height: 32px;
+    background: var(--white);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow);
+    font-size: 14px;
+  }
+  .cal-grid {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 8px;
+  }
+  .cal-weekday { text-align: center; font-size: 11px; font-weight: 600; color: var(--gray); padding: 4px 0; }
+  .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--black);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+  .cal-day.empty { color: transparent; pointer-events: none; }
+  .cal-day.today { background: var(--yellow); font-weight: 800; }
+  .cal-day.has-event::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 4px; height: 4px;
+    background: var(--yellow-dark);
+    border-radius: 50%;
+  }
+  .cal-day.other-month { color: var(--gray); opacity: 0.4; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Day events */
+  .day-events-title { font-size: 16px; font-weight: 700; color: var(--black); margin-bottom: 12px; }
+  .cal-event-card {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .cal-event-card:active { transform: scale(0.98); }
+  .cal-event-bar { width: 4px; border-radius: 4px; flex-shrink: 0; }
+  .cal-event-body { flex: 1; }
+  .cal-event-name { font-size: 14px; font-weight: 700; color: var(--black); }
+  .cal-event-code { font-size: 11px; color: var(--gray); margin-top: 2px; }
+  .cal-event-time { font-size: 12px; color: var(--gray); margin-top: 4px; }
+  .cal-event-room {
+    font-size: 11px;
+    background: var(--bg);
+    color: var(--black);
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  /* ===== PROFILE SCREEN ===== */
+  .profile-hero {
+    background: var(--yellow);
+    border-radius: var(--radius);
+    padding: 24px 20px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.6);
+  }
+  .profile-info .name { font-size: 20px; font-weight: 800; color: var(--black); }
+  .profile-info .course { font-size: 13px; color: rgba(0,0,0,0.6); margin-top: 2px; }
+  .profile-info .matric { font-size: 12px; color: rgba(0,0,0,0.5); margin-top: 4px; font-weight: 600; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 14px 12px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .stat-value { font-size: 22px; font-weight: 800; color: var(--black); }
+  .stat-label { font-size: 10px; color: var(--gray); margin-top: 4px; font-weight: 500; }
+
+  /* Progress */
+  .progress-section { margin-bottom: 16px; }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label { font-size: 14px; font-weight: 600; color: var(--black); }
+  .progress-pct { font-size: 14px; font-weight: 700; color: var(--yellow-dark); }
+  .progress-bar {
+    height: 10px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--yellow), var(--yellow-dark));
+    border-radius: 100px;
+    transition: width 1s ease;
+  }
+  .progress-sub { font-size: 12px; color: var(--gray); margin-top: 6px; }
+
+  /* Prereq map */
+  .prereq-container {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .prereq-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .prereq-map {
+    display: flex;
+    gap: 0;
+    min-width: 500px;
+    align-items: center;
+    justify-content: center;
+  }
+  .prereq-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  .prereq-col-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .prereq-node {
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    min-width: 72px;
+    line-height: 1.3;
+    cursor: pointer;
+    transition: transform 0.15s;
+    border: 2px solid transparent;
+  }
+  .prereq-node:active { transform: scale(0.95); }
+  .prereq-node.done { background: #E8F7E0; color: var(--green-dark); border-color: var(--green-mid); }
+  .prereq-node.current { background: var(--yellow); color: var(--black); border-color: var(--yellow-dark); }
+  .prereq-node.next { background: #FFF3E0; color: var(--yellow-dark); border-color: var(--yellow); }
+  .prereq-node.locked { background: var(--bg); color: var(--gray); border-color: transparent; }
+  .prereq-connector {
+    flex: 1;
+    height: 2px;
+    background: rgba(0,0,0,0.1);
+    margin: 0 4px;
+    position: relative;
+    min-width: 20px;
+  }
+  .prereq-connector::after {
+    content: '›';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--gray);
+  }
+
+  /* History */
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    cursor: pointer;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-left { display: flex; align-items: center; gap: 12px; }
+  .history-code {
+    background: var(--bg);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--black);
+    font-family: monospace;
+  }
+  .history-name { font-size: 13px; font-weight: 600; color: var(--black); }
+  .history-period { font-size: 11px; color: var(--gray); margin-top: 1px; }
+  .history-grade {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--green-dark);
+  }
+  .history-grade.fail { color: var(--red); }
+
+  /* ===== FORUM SCREEN ===== */
+  .forum-header {
+    background: var(--yellow);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .forum-code { font-size: 12px; font-weight: 700; color: rgba(0,0,0,0.5); letter-spacing: 1px; }
+  .forum-name { font-size: 20px; font-weight: 800; color: var(--black); margin-top: 4px; }
+  .forum-prof { font-size: 13px; color: rgba(0,0,0,0.6); margin-top: 4px; }
+  .forum-stats { display: flex; gap: 16px; margin-top: 14px; }
+  .forum-stat { font-size: 12px; color: rgba(0,0,0,0.6); }
+  .forum-stat strong { font-weight: 700; color: var(--black); }
+
+  /* Progress bars in forum */
+  .forum-progress {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .forum-progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .forum-progress-label { font-size: 13px; font-weight: 600; color: var(--black); }
+  .forum-progress-val { font-size: 13px; font-weight: 700; }
+
+  .prog-bar-sm {
+    height: 8px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .prog-fill-sm {
+    height: 100%;
+    border-radius: 100px;
+  }
+  .prog-fill-green { background: var(--green-mid); }
+  .prog-fill-yellow { background: var(--yellow); }
+  .prog-fill-red { background: var(--red); }
+
+  /* Post */
+  .post-item {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .post-item:active { transform: scale(0.98); }
+  .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .post-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .post-author { font-size: 13px; font-weight: 700; color: var(--black); }
+  .post-role { font-size: 11px; color: var(--gray); }
+  .post-date { font-size: 11px; color: var(--gray); margin-left: auto; }
+  .post-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .post-tag.aviso { background: #FFF3E0; color: var(--yellow-dark); }
+  .post-tag.trabalho { background: #EEF0FF; color: var(--blue); }
+  .post-tag.material { background: #F0FFF0; color: var(--green-dark); }
+  .post-content { font-size: 13px; color: var(--black); line-height: 1.5; }
+  .post-footer { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .post-action {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--gray);
+    cursor: pointer; background: none; border: none;
+  }
+  .post-deadline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFF0F2;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--red);
+    font-weight: 600;
+    margin-top: 10px;
+  }
+
+  /* FAB */
+  .fab {
+    position: absolute;
+    bottom: 96px;
+    right: 20px;
+    width: 52px; height: 52px;
+    background: var(--black);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    transition: transform 0.15s;
+    border: none;
+    z-index: 50;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* NOTIFICATION PANEL */
+  .notif-panel {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    background: var(--white);
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 60px 20px 20px;
+    box-shadow: var(--shadow-md);
+    z-index: 200;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+  }
+  .notif-panel.open { transform: translateY(0); }
+  .notif-panel-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--black);
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .notif-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--gray);
+  }
+  .notif-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    align-items: flex-start;
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .notif-body { flex: 1; }
+  .notif-text { font-size: 13px; color: var(--black); line-height: 1.4; }
+  .notif-text strong { font-weight: 700; }
+  .notif-when { font-size: 11px; color: var(--gray); margin-top: 3px; }
+  .notif-dot { width: 8px; height: 8px; background: var(--blue); border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+
+  /* CHATBOT */
+  .chatbot-btn {
+    position: absolute;
+    bottom: 96px;
+    left: 20px;
+    width: 48px; height: 48px;
+    background: var(--yellow);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(223,140,6,0.4);
+    transition: transform 0.15s;
+    border: none;
+    z-index: 50;
+    font-size: 20px;
+  }
+  .chatbot-btn:active { transform: scale(0.93); }
+
+  .chatbot-panel {
+    position: absolute;
+    bottom: 84px;
+    left: 12px; right: 12px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-md);
+    z-index: 200;
+    display: none;
+    max-height: 320px;
+    flex-direction: column;
+  }
+  .chatbot-panel.open { display: flex; }
+  .chatbot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .chatbot-title { font-size: 14px; font-weight: 700; color: var(--black); display: flex; align-items: center; gap: 8px; }
+  .chatbot-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--gray); }
+  .chatbot-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .chatbot-messages::-webkit-scrollbar { display: none; }
+  .chat-msg {
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 85%;
+  }
+  .chat-msg.bot { background: var(--bg); color: var(--black); align-self: flex-start; }
+  .chat-msg.user { background: var(--yellow); color: var(--black); align-self: flex-end; font-weight: 600; }
+  .chatbot-input {
+    display: flex;
+    gap: 8px;
+  }
+  .chatbot-input input {
+    flex: 1;
+    background: var(--bg);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+  }
+  .chatbot-send {
+    width: 34px; height: 34px;
+    background: var(--yellow);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title { font-size: 16px; font-weight: 800; color: var(--black); }
+  .see-all { font-size: 12px; font-weight: 600; color: var(--yellow-dark); cursor: pointer; }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px 4px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--yellow);
+    color: var(--black);
+  }
+
+  /* Page title */
+  .page-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+    padding: 0 20px 14px;
+    flex-shrink: 0;
+  }
+
+  /* Chip */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Overlay */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 150;
+    display: none;
+  }
+  .overlay.show { display: block; }
+
+  /* Screen top pad for home */
+  .screen-pad-top { padding-top: 0; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ===================== HOME SCREEN ===================== -->
+  <div class="screen active" id="screen-home">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+    </div>
+    <div class="top-bar">
+      <div class="logo">al<span>i</span>s</div>
+      <div class="top-bar-actions">
+        <button class="icon-btn" onclick="toggleNotif()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C10.3 2 9 3.3 9 5v.3C6.6 6.2 5 8.5 5 11v5l-2 2v1h18v-1l-2-2v-5c0-2.5-1.6-4.8-4-5.7V5c0-1.7-1.3-3-3-3zm0 20c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z" fill="#000"/></svg>
+          <div class="notif-badge"></div>
+        </button>
+        <button class="icon-btn" onclick="goTo('screen-profile')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#000"/><path d="M20 19c0-4-3.6-7-8-7s-8 3-8 7" stroke="#000" stroke-width="2" fill="none"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Date hero -->
+      <div class="date-hero">
+        <div>
+          <span class="day-big">19</span><span class="month">Maio</span>
+        </div>
+        <div class="week-strip">
+          <div class="week-day"><span class="wd-name">Seg</span><span class="wd-num">18</span></div>
+          <div class="week-day today"><span class="wd-name">Ter</span><span class="wd-num">19</span></div>
+          <div class="week-day"><span class="wd-name">Qua</span><span class="wd-num">20</span></div>
+          <div class="week-day"><span class="wd-name">Qui</span><span class="wd-num">21</span></div>
+          <div class="week-day"><span class="wd-name">Sex</span><span class="wd-num">22</span></div>
+          <div class="week-day"><span class="wd-name">Sáb</span><span class="wd-num">23</span></div>
+          <div class="week-day"><span class="wd-name">Dom</span><span class="wd-num">24</span></div>
+        </div>
+        <!-- Today's events -->
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.1);">
+          <div class="event-item" onclick="goTo('screen-calendar')">
+            <div class="event-dot" style="background: var(--yellow-dark)"></div>
+            <div class="event-info">
+              <div class="event-time">13:00 — 16:00</div>
+              <div class="event-name">História da Indumentária</div>
+              <div class="event-meta">DSG1823 · Sala L405</div>
+            </div>
+          </div>
+          <div class="event-item" onclick="goTo('screen-calendar')">
+            <div class="event-dot" style="background: var(--blue)"></div>
+            <div class="event-info">
+              <div class="event-time">16:00 — 19:00</div>
+              <div class="event-name">Criação/Tratamento de Imagem</div>
+              <div class="event-meta">DSG1856 · Sala K212</div>
+            </div>
+          </div>
+          <div class="event-item" onclick="goTo('screen-calendar')">
+            <div class="event-dot" style="background: var(--green-mid)"></div>
+            <div class="event-info">
+              <div class="event-time">19:00 — 20:00</div>
+              <div class="event-name">Barraca na Feira Pólen</div>
+              <div class="event-meta">Evento pessoal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="section-header">
+        <span class="section-title">Lembretes</span>
+        <span class="see-all">ver todos</span>
+      </div>
+
+      <div class="alert-item urgent">
+        <span style="font-size:16px">⚠️</span>
+        <div>
+          <div class="alert-text"><strong>G1 de Projetar para Concretizar</strong> vence hoje às 23:59</div>
+          <div class="alert-time">PSI1958 · em 14h 23min</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <span style="font-size:16px">📋</span>
+        <div>
+          <div class="alert-text">Inscrições para <strong>Nivelamento de Português</strong> encerram amanhã</div>
+          <div class="alert-time">até 20/05 às 18:00</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <span style="font-size:16px">💳</span>
+        <div>
+          <div class="alert-text">Pagamento da <strong>matrícula 2025.2</strong> vence em 3 dias</div>
+          <div class="alert-time">até 22/05</div>
+        </div>
+      </div>
+
+      <!-- Quick access -->
+      <div class="section-header" style="margin-top: 8px;">
+        <span class="section-title">Acesso rápido</span>
+      </div>
+      <div class="quick-grid">
+        <div class="quick-item" onclick="goTo('screen-forum')">
+          <div class="quick-icon" style="background: #FFF3E0">📚</div>
+          <span class="quick-label">Fórum de Aulas</span>
+        </div>
+        <div class="quick-item" onclick="goTo('screen-profile')">
+          <div class="quick-icon" style="background: #EEF0FF">👤</div>
+          <span class="quick-label">Meu Perfil</span>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon" style="background: #F0FFF0">💼</div>
+          <span class="quick-label">Estágios</span>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon" style="background: #F9F0FF">📝</div>
+          <span class="quick-label">Requerimentos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="goTo('screen-home')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#9A9582"/></svg>
+        <span class="nav-label">Início</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-calendar')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" fill="#9A9582"/></svg>
+        <span class="nav-label">Agenda</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-forum')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#9A9582"/></svg>
+        <span class="nav-label">Fórum</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-profile')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#9A9582"/><path d="M20 19c0-4-3.6-7-8-7s-8 3-8 7" stroke="#9A9582" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Perfil</span>
+      </button>
+    </nav>
+
+    <!-- Chatbot button -->
+    <button class="chatbot-btn" onclick="toggleChat()" id="chatbot-trigger-home">✦</button>
+  </div>
+
+  <!-- ===================== CALENDAR SCREEN ===================== -->
+  <div class="screen" id="screen-calendar">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+    </div>
+    <div class="top-bar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--black)">‹</button>
+      <div style="font-size:17px;font-weight:700">Agenda</div>
+      <button class="icon-btn" style="width:32px;height:32px;font-size:16px">+</button>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Month nav -->
+      <div class="cal-month-header">
+        <button class="cal-nav-btn">‹</button>
+        <span class="cal-month-title">Maio 2025</span>
+        <button class="cal-nav-btn">›</button>
+      </div>
+
+      <!-- Calendar grid -->
+      <div class="cal-grid">
+        <div class="cal-weekdays">
+          <div class="cal-weekday">D</div>
+          <div class="cal-weekday">S</div>
+          <div class="cal-weekday">T</div>
+          <div class="cal-weekday">Q</div>
+          <div class="cal-weekday">Q</div>
+          <div class="cal-weekday">S</div>
+          <div class="cal-weekday">S</div>
+        </div>
+        <div class="cal-days" id="cal-days-grid">
+          <!-- generated by JS -->
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow-dark)"></div> Aulas</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> PUC</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green-mid)"></div> Pessoal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Prazo</div>
+      </div>
+
+      <!-- Today's events -->
+      <div class="day-events-title">Terça-feira, 19 de Maio</div>
+
+      <div class="cal-event-card" onclick="goTo('screen-forum')">
+        <div class="cal-event-bar" style="background:var(--yellow-dark)"></div>
+        <div class="cal-event-body">
+          <div class="cal-event-name">História da Indumentária</div>
+          <div class="cal-event-code">DSG1823</div>
+          <div class="cal-event-time">🕐 13:00 — 16:00</div>
+          <span class="cal-event-room">L405</span>
+        </div>
+      </div>
+
+      <div class="cal-event-card" onclick="goTo('screen-forum')">
+        <div class="cal-event-bar" style="background:var(--blue)"></div>
+        <div class="cal-event-body">
+          <div class="cal-event-name">Criação/Tratamento de Imagem</div>
+          <div class="cal-event-code">DSG1856</div>
+          <div class="cal-event-time">🕐 16:00 — 19:00</div>
+          <span class="cal-event-room">K212</span>
+        </div>
+      </div>
+
+      <div class="cal-event-card">
+        <div class="cal-event-bar" style="background:var(--red)"></div>
+        <div class="cal-event-body">
+          <div class="cal-event-name">Entrega G1 — Projetar para Concretizar</div>
+          <div class="cal-event-code">DSG1901 · Prazo</div>
+          <div class="cal-event-time">🕐 até 23:59</div>
+        </div>
+      </div>
+
+      <div class="cal-event-card">
+        <div class="cal-event-bar" style="background:var(--green-mid)"></div>
+        <div class="cal-event-body">
+          <div class="cal-event-name">Barraca na Feira Pólen</div>
+          <div class="cal-event-code">Evento pessoal</div>
+          <div class="cal-event-time">🕐 19:00 — 20:00</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="nav-item" onclick="goTo('screen-home')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#9A9582"/></svg>
+        <span class="nav-label">Início</span>
+      </button>
+      <button class="nav-item active" onclick="goTo('screen-calendar')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" fill="#9A9582"/></svg>
+        <span class="nav-label">Agenda</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-forum')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#9A9582"/></svg>
+        <span class="nav-label">Fórum</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-profile')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#9A9582"/><path d="M20 19c0-4-3.6-7-8-7s-8 3-8 7" stroke="#9A9582" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Perfil</span>
+      </button>
+    </nav>
+    <button class="chatbot-btn" onclick="toggleChat()">✦</button>
+  </div>
+
+  <!-- ===================== PROFILE SCREEN ===================== -->
+  <div class="screen" id="screen-profile">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+    </div>
+    <div class="top-bar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--black)">‹</button>
+      <div style="font-size:17px;font-weight:700">Meu Perfil</div>
+      <button class="icon-btn" style="width:32px;height:32px;font-size:14px">⚙</button>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Profile hero -->
+      <div class="profile-hero">
+        <div class="avatar">🧑‍🎨</div>
+        <div class="profile-info">
+          <div class="name">Theo Carvalho</div>
+          <div class="course">Design · PUC-Rio</div>
+          <div class="matric">Mat. 2220345 · 5º Período</div>
+          <div style="margin-top:8px;font-size:12px;color:rgba(0,0,0,0.5);background:rgba(255,255,255,0.4);padding:3px 10px;border-radius:20px;display:inline-block">💼 Estágio: Planejador na CazéTV</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">7,4</div>
+          <div class="stat-label">CR Atual</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">5º</div>
+          <div class="stat-label">Período</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">18</div>
+          <div class="stat-label">Matérias feitas</div>
+        </div>
+      </div>
+
+      <!-- Progress to graduation -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-header" style="margin-bottom:12px">
+          <span class="card-title" style="margin:0">Para se formar</span>
+          <button onclick="goTo('screen-prereq')" style="background:var(--yellow);border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">Planejar períodos →</button>
+        </div>
+        <div class="progress-header">
+          <span class="progress-label">Créditos concluídos</span>
+          <span class="progress-pct">52%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:52%"></div>
+        </div>
+        <div class="progress-sub">104 de 200 créditos · faltam 96</div>
+
+        <div style="margin-top:14px">
+          <div class="progress-header">
+            <span class="progress-label">Disciplinas obrigatórias</span>
+            <span class="progress-pct" style="color:var(--blue)">60%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:60%;background:linear-gradient(90deg,var(--blue),var(--blue-dark))"></div>
+          </div>
+          <div class="progress-sub">18 de 30 disciplinas</div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="progress-header">
+            <span class="progress-label">Eletivas</span>
+            <span class="progress-pct" style="color:var(--green-mid)">25%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:25%;background:linear-gradient(90deg,var(--green-mid),var(--green-dark))"></div>
+          </div>
+          <div class="progress-sub">2 de 8 eletivas</div>
+        </div>
+      </div>
+
+      <!-- Tabs: current / history / prereq -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this, 'tab-current')">Matérias atuais</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-history')">Histórico</button>
+      </div>
+
+      <!-- Current subjects -->
+      <div id="tab-current">
+        <div class="card" style="padding:14px 16px">
+          <div class="event-item" onclick="goTo('screen-forum')">
+            <div class="event-dot" style="background:var(--yellow-dark)"></div>
+            <div class="event-info">
+              <div class="event-name">Projetar para Concretizar</div>
+              <div class="event-time">DSG1901 · Seg/Qua 13:00–16:00</div>
+            </div>
+          </div>
+          <div class="event-item">
+            <div class="event-dot" style="background:var(--blue)"></div>
+            <div class="event-info">
+              <div class="event-name">Criação/Tratamento de Imagem</div>
+              <div class="event-time">DSG1856 · Ter 16:00–19:00</div>
+            </div>
+          </div>
+          <div class="event-item">
+            <div class="event-dot" style="background:var(--purple-mid)"></div>
+            <div class="event-info">
+              <div class="event-name">História da Indumentária</div>
+              <div class="event-time">DSG1823 · Ter 13:00–16:00</div>
+            </div>
+          </div>
+          <div class="event-item">
+            <div class="event-dot" style="background:var(--green-mid)"></div>
+            <div class="event-info">
+              <div class="event-name">Fundamentos de Pesquisa</div>
+              <div class="event-time">DSG1833 · Sex 09:00–12:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History tab -->
+      <div id="tab-history" style="display:none">
+        <div class="card" style="padding:14px 16px">
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">DSG1701</span>
+              <div>
+                <div class="history-name">Introdução ao Design</div>
+                <div class="history-period">2023.1 · 1º Período</div>
+              </div>
+            </div>
+            <div class="history-grade">9,0</div>
+          </div>
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">DSG1702</span>
+              <div>
+                <div class="history-name">Representação Visual I</div>
+                <div class="history-period">2023.1 · 1º Período</div>
+              </div>
+            </div>
+            <div class="history-grade">8,5</div>
+          </div>
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">MAT1101</span>
+              <div>
+                <div class="history-name">Matemática Básica</div>
+                <div class="history-period">2023.1 · 1º Período</div>
+              </div>
+            </div>
+            <div class="history-grade">6,0</div>
+          </div>
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">DSG1750</span>
+              <div>
+                <div class="history-name">Design Gráfico I</div>
+                <div class="history-period">2023.2 · 2º Período</div>
+              </div>
+            </div>
+            <div class="history-grade">9,5</div>
+          </div>
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">DSG1810</span>
+              <div>
+                <div class="history-name">Tipografia</div>
+                <div class="history-period">2024.1 · 3º Período</div>
+              </div>
+            </div>
+            <div class="history-grade">8,0</div>
+          </div>
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">DSG1830</span>
+              <div>
+                <div class="history-name">UX / Interfaces Digitais</div>
+                <div class="history-period">2024.2 · 4º Período</div>
+              </div>
+            </div>
+            <div class="history-grade">9,0</div>
+          </div>
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-code">PSI1701</span>
+              <div>
+                <div class="history-name">Psicologia Geral</div>
+                <div class="history-period">2023.2 · 2º Período</div>
+              </div>
+            </div>
+            <div class="history-grade fail">4,5</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="nav-item" onclick="goTo('screen-home')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#9A9582"/></svg>
+        <span class="nav-label">Início</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-calendar')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" fill="#9A9582"/></svg>
+        <span class="nav-label">Agenda</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-forum')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#9A9582"/></svg>
+        <span class="nav-label">Fórum</span>
+      </button>
+      <button class="nav-item active" onclick="goTo('screen-profile')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#9A9582"/><path d="M20 19c0-4-3.6-7-8-7s-8 3-8 7" stroke="#9A9582" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Perfil</span>
+      </button>
+    </nav>
+    <button class="chatbot-btn" onclick="toggleChat()">✦</button>
+  </div>
+
+  <!-- ===================== PREREQ MAP SCREEN ===================== -->
+  <div class="screen" id="screen-prereq">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+    </div>
+    <div class="top-bar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--black)">‹</button>
+      <div style="font-size:17px;font-weight:700">Mapa de Pré-Requisitos</div>
+      <div style="width:32px"></div>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Info banner -->
+      <div style="background:var(--yellow);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px">
+        <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:4px">Curso de Design · PUC-Rio</div>
+        <div style="font-size:12px;color:rgba(0,0,0,0.6);line-height:1.5">Visualize o caminho completo até sua formatura. Toque em qualquer matéria para ver detalhes.</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend" style="margin-bottom:16px">
+        <div class="legend-item"><div style="width:12px;height:12px;border-radius:3px;background:#E8F7E0;border:2px solid var(--green-mid)"></div> Concluída</div>
+        <div class="legend-item"><div style="width:12px;height:12px;border-radius:3px;background:var(--yellow);border:2px solid var(--yellow-dark)"></div> Cursando</div>
+        <div class="legend-item"><div style="width:12px;height:12px;border-radius:3px;background:#FFF3E0;border:2px solid var(--yellow)"></div> Disponível</div>
+        <div class="legend-item"><div style="width:12px;height:12px;border-radius:3px;background:var(--bg);border:2px solid transparent"></div> Bloqueada</div>
+      </div>
+
+      <!-- Map -->
+      <div style="background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);overflow-x:auto;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--gray);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px">Trilha Principal — Design</div>
+
+        <!-- Row 1: 1º Período -->
+        <div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">1º Período</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+          <div class="prereq-node done" onclick="showNodeInfo('Introdução ao Design','DSG1701','Concluída com 9,0')">Intro ao Design<br><span style="font-size:9px;opacity:0.7">DSG1701</span></div>
+          <div class="prereq-node done" onclick="showNodeInfo('Representação Visual I','DSG1702','Concluída com 8,5')">Represent. Visual I<br><span style="font-size:9px;opacity:0.7">DSG1702</span></div>
+          <div class="prereq-node done" onclick="showNodeInfo('Matemática Básica','MAT1101','Concluída com 6,0')">Matemática Básica<br><span style="font-size:9px;opacity:0.7">MAT1101</span></div>
+          <div class="prereq-node done" onclick="showNodeInfo('Teoria do Design','DSG1703','Concluída com 8,0')">Teoria do Design<br><span style="font-size:9px;opacity:0.7">DSG1703</span></div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="font-size:18px;color:var(--gray);margin-bottom:8px;text-align:center">↓</div>
+
+        <!-- Row 2: 2º e 3º Período -->
+        <div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">2º – 3º Período</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+          <div class="prereq-node done" onclick="showNodeInfo('Design Gráfico I','DSG1750','Concluída com 9,5')">Design Gráfico I<br><span style="font-size:9px;opacity:0.7">DSG1750</span></div>
+          <div class="prereq-node done" onclick="showNodeInfo('Tipografia','DSG1810','Concluída com 8,0')">Tipografia<br><span style="font-size:9px;opacity:0.7">DSG1810</span></div>
+          <div class="prereq-node done" onclick="showNodeInfo('Fotografia Básica','DSG1800','Concluída com 7,5')">Fotografia Básica<br><span style="font-size:9px;opacity:0.7">DSG1800</span></div>
+          <div class="prereq-node done" onclick="showNodeInfo('UX / Interfaces Digitais','DSG1830','Concluída com 9,0')">UX / Interfaces<br><span style="font-size:9px;opacity:0.7">DSG1830</span></div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="font-size:18px;color:var(--gray);margin-bottom:8px;text-align:center">↓</div>
+
+        <!-- Row 3: 4º e 5º Período (current) -->
+        <div style="font-size:10px;font-weight:700;color:var(--yellow-dark);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">4º – 5º Período ← você está aqui</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+          <div class="prereq-node current" onclick="showNodeInfo('Projetar para Concretizar','DSG1901','Cursando agora — 5º Período')">Projetar para Conc.<br><span style="font-size:9px;opacity:0.7">DSG1901</span></div>
+          <div class="prereq-node current" onclick="showNodeInfo('Criação/Tratamento de Imagem','DSG1856','Cursando agora — 5º Período')">Criação de Imagem<br><span style="font-size:9px;opacity:0.7">DSG1856</span></div>
+          <div class="prereq-node current" onclick="showNodeInfo('História da Indumentária','DSG1823','Cursando agora — 5º Período')">História Indumentária<br><span style="font-size:9px;opacity:0.7">DSG1823</span></div>
+          <div class="prereq-node current" onclick="showNodeInfo('Fundamentos de Pesquisa','DSG1833','Cursando agora — 5º Período')">Fund. de Pesquisa<br><span style="font-size:9px;opacity:0.7">DSG1833</span></div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="font-size:18px;color:var(--gray);margin-bottom:8px;text-align:center">↓</div>
+
+        <!-- Row 4: Next available -->
+        <div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">6º Período — disponíveis</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+          <div class="prereq-node next" onclick="showNodeInfo('Design Editorial','DSG1910','Disponível — requer DSG1856')">Design Editorial<br><span style="font-size:9px;opacity:0.7">DSG1910</span></div>
+          <div class="prereq-node next" onclick="showNodeInfo('Branding e Identidade Visual','DSG1920','Disponível — requer DSG1750')">Branding<br><span style="font-size:9px;opacity:0.7">DSG1920</span></div>
+          <div class="prereq-node next" onclick="showNodeInfo('Motion Design','DSG1930','Disponível — requer DSG1856')">Motion Design<br><span style="font-size:9px;opacity:0.7">DSG1930</span></div>
+        </div>
+
+        <!-- Arrow -->
+        <div style="font-size:18px;color:var(--gray);margin-bottom:8px;text-align:center">↓</div>
+
+        <!-- Row 5: Locked -->
+        <div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">7º–8º Período — bloqueadas</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <div class="prereq-node locked" onclick="showNodeInfo('Projeto de Conclusão I','DSG2001','Bloqueada — requer 80% dos créditos')">Projeto Conclusão I<br><span style="font-size:9px;opacity:0.7">DSG2001</span></div>
+          <div class="prereq-node locked" onclick="showNodeInfo('Projeto de Conclusão II','DSG2002','Bloqueada — requer DSG2001')">Projeto Conclusão II<br><span style="font-size:9px;opacity:0.7">DSG2002</span></div>
+          <div class="prereq-node locked" onclick="showNodeInfo('Estágio Supervisionado','DSG2010','Bloqueada — requer 6º período completo')">Estágio Superv.<br><span style="font-size:9px;opacity:0.7">DSG2010</span></div>
+        </div>
+      </div>
+
+      <!-- CTA to plan semesters -->
+      <div style="background:var(--black);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--yellow)">Planejar minha grade</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">Monte os próximos períodos</div>
+        </div>
+        <button style="background:var(--yellow);border:none;border-radius:var(--radius-sm);padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer">→</button>
+      </div>
+    </div>
+
+    <!-- Node info modal -->
+    <div id="node-modal" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:var(--radius) var(--radius) 0 0;padding:24px 20px;z-index:300;box-shadow:0 -8px 30px rgba(0,0,0,0.15)">
+      <div style="width:40px;height:4px;background:rgba(0,0,0,0.1);border-radius:2px;margin:0 auto 16px"></div>
+      <div id="node-modal-content"></div>
+      <button onclick="closeModal()" style="width:100%;background:var(--bg);border:none;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px">Fechar</button>
+    </div>
+    <div id="modal-overlay" onclick="closeModal()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:250"></div>
+
+    <nav class="bottom-nav">
+      <button class="nav-item" onclick="goTo('screen-home')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#9A9582"/></svg>
+        <span class="nav-label">Início</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-calendar')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" fill="#9A9582"/></svg>
+        <span class="nav-label">Agenda</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-forum')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#9A9582"/></svg>
+        <span class="nav-label">Fórum</span>
+      </button>
+      <button class="nav-item active" onclick="goTo('screen-profile')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#9A9582"/><path d="M20 19c0-4-3.6-7-8-7s-8 3-8 7" stroke="#9A9582" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Perfil</span>
+      </button>
+    </nav>
+    <button class="chatbot-btn" onclick="toggleChat()">✦</button>
+  </div>
+
+  <!-- ===================== FORUM SCREEN ===================== -->
+  <div class="screen" id="screen-forum">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+    </div>
+    <div class="top-bar">
+      <button onclick="goBack()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--black)">‹</button>
+      <div style="font-size:17px;font-weight:700">Fórum de Aula</div>
+      <button class="icon-btn" onclick="toggleNotif()" style="width:32px;height:32px">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C10.3 2 9 3.3 9 5v.3C6.6 6.2 5 8.5 5 11v5l-2 2v1h18v-1l-2-2v-5c0-2.5-1.6-4.8-4-5.7V5c0-1.7-1.3-3-3-3zm0 20c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z" fill="#000"/></svg>
+      </button>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Course selector -->
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none">
+        <div style="flex-shrink:0;background:var(--black);color:var(--yellow);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer">DSG1901</div>
+        <div style="flex-shrink:0;background:var(--white);color:var(--gray);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">DSG1856</div>
+        <div style="flex-shrink:0;background:var(--white);color:var(--gray);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">DSG1823</div>
+        <div style="flex-shrink:0;background:var(--white);color:var(--gray);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)">DSG1833</div>
+      </div>
+
+      <!-- Forum header card -->
+      <div class="forum-header">
+        <div class="forum-code">DSG1901</div>
+        <div class="forum-name">Projetar para Concretizar</div>
+        <div class="forum-prof">Prof.ª Carla Mendes · Design PUC-Rio</div>
+        <div class="forum-stats">
+          <span class="forum-stat"><strong>32</strong> alunos</span>
+          <span class="forum-stat"><strong>15/30</strong> encontros</span>
+          <span class="forum-stat"><strong>3</strong> trabalhos</span>
+        </div>
+      </div>
+
+      <!-- Progress bars -->
+      <div class="forum-progress">
+        <div class="forum-progress-row">
+          <span class="forum-progress-label">Andamento da disciplina</span>
+          <span class="forum-progress-val" style="color:var(--yellow-dark)">50%</span>
+        </div>
+        <div class="prog-bar-sm">
+          <div class="prog-fill-sm prog-fill-yellow" style="width:50%"></div>
+        </div>
+
+        <div class="forum-progress-row">
+          <span class="forum-progress-label">Suas faltas</span>
+          <span class="forum-progress-val" style="color:var(--green-mid)">2 de 8 max.</span>
+        </div>
+        <div class="prog-bar-sm">
+          <div class="prog-fill-sm prog-fill-green" style="width:25%"></div>
+        </div>
+
+        <div class="forum-progress-row">
+          <span class="forum-progress-label">Nota parcial</span>
+          <span class="forum-progress-val" style="color:var(--blue)">7,5 / 10</span>
+        </div>
+        <div class="prog-bar-sm">
+          <div class="prog-fill-sm" style="width:75%;background:var(--blue)"></div>
+        </div>
+      </div>
+
+      <!-- Posts -->
+      <div class="section-header">
+        <span class="section-title">Mural da turma</span>
+        <span class="see-all">📌 fixados</span>
+      </div>
+
+      <!-- Post 1 - deadline -->
+      <div class="post-item">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FFF3E0;font-size:18px">👩‍🏫</div>
+          <div>
+            <div class="post-author">Prof.ª Carla Mendes</div>
+            <div class="post-role">Professora</div>
+          </div>
+          <div class="post-date">hoje</div>
+        </div>
+        <span class="post-tag aviso">📢 Aviso</span>
+        <div class="post-content">Lembrete: a entrega do <strong>G1 — Diagnóstico de Plataforma</strong> está se aproximando. Enviem o PDF consolidado com todas as análises de entrevistas e o mapa de oportunidades.</div>
+        <div class="post-deadline">
+          🚨 Prazo: hoje às 23:59
+        </div>
+        <div class="post-footer">
+          <button class="post-action">💬 12 respostas</button>
+          <button class="post-action">📎 Material</button>
+        </div>
+      </div>
+
+      <!-- Post 2 - material -->
+      <div class="post-item">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FFF3E0;font-size:18px">👩‍🏫</div>
+          <div>
+            <div class="post-author">Prof.ª Carla Mendes</div>
+            <div class="post-role">Professora</div>
+          </div>
+          <div class="post-date">ontem</div>
+        </div>
+        <span class="post-tag material">📚 Material</span>
+        <div class="post-content">Slides da aula 14 disponíveis — <strong>Síntese de Pesquisa Qualitativa</strong>. Contem os frameworks de JTBD e mapeamento de afinidade que usamos.</div>
+        <div class="post-footer">
+          <button class="post-action">📥 Baixar slides</button>
+          <button class="post-action">💬 3</button>
+        </div>
+      </div>
+
+      <!-- Post 3 - student -->
+      <div class="post-item">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#EEF0FF;font-size:18px">🧑‍💻</div>
+          <div>
+            <div class="post-author">Gunther Meier</div>
+            <div class="post-role">Aluno · Grupo 3</div>
+          </div>
+          <div class="post-date">ontem</div>
+        </div>
+        <span class="post-tag trabalho">📝 Trabalho</span>
+        <div class="post-content">Alguém conseguiu resolver o problema da formatação do mapa de afinidade no Figma? A nossa tá com os clusters sobrepostos.</div>
+        <div class="post-footer">
+          <button class="post-action">💬 5 respostas</button>
+          <button class="post-action" onclick="goTo('screen-home')" style="color:var(--blue)">💬 Responder no chat</button>
+        </div>
+      </div>
+
+      <!-- Post 4 - assignment -->
+      <div class="post-item">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FFF3E0;font-size:18px">👩‍🏫</div>
+          <div>
+            <div class="post-author">Prof.ª Carla Mendes</div>
+            <div class="post-role">Professora</div>
+          </div>
+          <div class="post-date">18/05</div>
+        </div>
+        <span class="post-tag trabalho">📝 Trabalho</span>
+        <div class="post-content"><strong>G2 — Prototipagem e Teste de Solução</strong>: Após o G1, cada grupo deve apresentar um protótipo navegável do conceito validado. Critérios de avaliação no PDF anexo.</div>
+        <div class="post-deadline" style="background:#EEF0FF;color:var(--blue)">
+          📅 Entrega: 12/06 às 23:59
+        </div>
+        <div class="post-footer">
+          <button class="post-action">📥 Ver critérios</button>
+          <button class="post-action">💬 8</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FAB for new post -->
+    <button class="fab">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/></svg>
+    </button>
+
+    <nav class="bottom-nav">
+      <button class="nav-item" onclick="goTo('screen-home')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#9A9582"/></svg>
+        <span class="nav-label">Início</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-calendar')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" fill="#9A9582"/></svg>
+        <span class="nav-label">Agenda</span>
+      </button>
+      <button class="nav-item active" onclick="goTo('screen-forum')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#9A9582"/></svg>
+        <span class="nav-label">Fórum</span>
+      </button>
+      <button class="nav-item" onclick="goTo('screen-profile')">
+        <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#9A9582"/><path d="M20 19c0-4-3.6-7-8-7s-8 3-8 7" stroke="#9A9582" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Perfil</span>
+      </button>
+    </nav>
+    <button class="chatbot-btn" onclick="toggleChat()">✦</button>
+  </div>
+
+  <!-- ===================== NOTIFICATIONS PANEL ===================== -->
+  <div class="notif-panel" id="notif-panel">
+    <div class="notif-panel-title">
+      Notificações
+      <button class="notif-close" onclick="toggleNotif()">✕</button>
+    </div>
+    <div style="overflow-y:auto;max-height:400px">
+      <div class="notif-item">
+        <div class="notif-icon" style="background:#FFF0F2">🚨</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>G1 de DSG1901</strong> vence hoje às 23:59. Não esqueça de enviar!</div>
+          <div class="notif-when">há 2 horas</div>
+        </div>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:#FFF3E0">📚</div>
+        <div class="notif-body">
+          <div class="notif-text">Prof.ª Carla postou novos slides em <strong>Projetar para Concretizar</strong></div>
+          <div class="notif-when">ontem às 18:30</div>
+        </div>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:#EEF0FF">💬</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>Gunther Meier</strong> respondeu sua mensagem no chat</div>
+          <div class="notif-when">ontem às 16:12</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:#F0FFF0">✅</div>
+        <div class="notif-body">
+          <div class="notif-text">Seu requerimento de <strong>documento acadêmico</strong> foi aprovado</div>
+          <div class="notif-when">há 2 dias</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:#FFF3E0">💼</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>3 novas vagas de estágio</strong> compatíveis com seu perfil em Design</div>
+          <div class="notif-when">há 3 dias</div>
+        </div>
+      </div>
+    </div>
+    <button onclick="toggleNotif()" style="width:100%;background:var(--bg);border:none;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px">Ver todas as notificações</button>
+  </div>
+
+  <!-- NOTIF OVERLAY -->
+  <div class="overlay" id="notif-overlay" onclick="toggleNotif()"></div>
+
+  <!-- ===================== CHATBOT ===================== -->
+  <div class="chatbot-panel" id="chatbot-panel">
+    <div class="chatbot-header">
+      <div class="chatbot-title">
+        <span style="font-size:18px">✦</span> Alis IA
+      </div>
+      <button class="chatbot-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chatbot-messages" id="chat-messages">
+      <div class="chat-msg bot">Oi, Theo! 👋 Sou a IA do Alis. Como posso te ajudar hoje?</div>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" id="chat-input" placeholder="Pergunte sobre a plataforma..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chatbot-send" onclick="sendChat()">→</button>
+    </div>
+  </div>
+
+</div><!-- end phone -->
+
+<script>
+  let navStack = [];
+
+  function goTo(screenId) {
+    const current = document.querySelector('.screen.active');
+    if (current && current.id !== screenId) {
+      navStack.push(current.id);
+    }
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    // close panels
+    closeNotif();
+    closeChatbot();
+  }
+
+  function goBack() {
+    if (navStack.length > 0) {
+      const prev = navStack.pop();
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(prev).classList.add('active');
+    } else {
+      goTo('screen-home');
+    }
+  }
+
+  // Calendar grid generation
+  function generateCalendar() {
+    const grid = document.getElementById('cal-days-grid');
+    if (!grid) return;
+    const days = [];
+    // May 2025 starts on Thursday (day index 4)
+    const startDay = 4;
+    const totalDays = 31;
+    const eventsSet = new Set([5,6,7,8,12,13,14,15,19,20,21,22,26,27,28]);
+    // empty cells
+    for (let i = 0; i < startDay; i++) {
+      days.push(`<div class="cal-day empty"></div>`);
+    }
+    for (let d = 1; d <= totalDays; d++) {
+      const isToday = d === 19;
+      const hasEvent = eventsSet.has(d);
+      days.push(`<div class="cal-day ${isToday?'today':''} ${hasEvent && !isToday?'has-event':''}">${d}</div>`);
+    }
+    grid.innerHTML = days.join('');
+  }
+
+  // Tabs
+  function switchTab(btn, tabId) {
+    btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const screen = btn.closest('.screen');
+    screen.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+    document.getElementById(tabId).style.display = 'block';
+  }
+
+  // Notifications
+  function toggleNotif() {
+    const panel = document.getElementById('notif-panel');
+    const overlay = document.getElementById('notif-overlay');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) {
+      panel.classList.remove('open');
+      overlay.classList.remove('show');
+    } else {
+      panel.classList.add('open');
+      overlay.classList.add('show');
+      closeChatbot();
+    }
+  }
+  function closeNotif() {
+    document.getElementById('notif-panel').classList.remove('open');
+    document.getElementById('notif-overlay').classList.remove('show');
+  }
+
+  // Chatbot
+  let chatOpen = false;
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    const panel = document.getElementById('chatbot-panel');
+    panel.style.display = chatOpen ? 'flex' : 'none';
+    if (chatOpen) closeNotif();
+  }
+  function closeChatbot() {
+    chatOpen = false;
+    document.getElementById('chatbot-panel').style.display = 'none';
+  }
+
+  const botResponses = {
+    'falta': 'Você tem 2 faltas em DSG1901. O limite é 8. Ainda está tranquilo! 😊',
+    'nota': 'Sua nota parcial em DSG1901 é 7,5. A G1 ainda não foi entregue hoje — não esqueça!',
+    'pré-requisito': 'Para pegar Design Editorial (DSG1910) no próximo período, você precisa ter concluído Criação/Tratamento de Imagem (DSG1856), que está cursando agora.',
+    'matrícula': 'A matrícula para 2025.2 abre em Julho. Você pode usar a simulação de matrícula no seu perfil para planejar a grade!',
+    'formatura': 'Você está com 52% dos créditos concluídos. Faltam 96 créditos para se formar.',
+    'calendário': 'Hoje você tem DSG1823 às 13h (sala L405) e DSG1856 às 16h (sala K212). E a entrega do G1 às 23:59!',
+    'cr': 'Seu CR atual é 7,4. Para melhorar, foque nas disciplinas com maior peso no seu histórico.'
+  };
+
+  function sendChat() {
+    const input = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // User message
+    messages.innerHTML += `<div class="chat-msg user">${text}</div>`;
+    input.value = '';
+
+    // Bot response
+    setTimeout(() => {
+      let response = 'Boa pergunta! Estou aqui para ajudar com dúvidas sobre matérias, prazos, requerimentos e tudo da plataforma. Pode perguntar!';
+      const lower = text.toLowerCase();
+      for (const key in botResponses) {
+        if (lower.includes(key)) { response = botResponses[key]; break; }
+      }
+      messages.innerHTML += `<div class="chat-msg bot">${response}</div>`;
+      messages.scrollTop = messages.scrollHeight;
+    }, 600);
+
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  // Node info modal
+  function showNodeInfo(name, code, status) {
+    const modal = document.getElementById('node-modal');
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('node-modal-content');
+    content.innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:var(--gray);letter-spacing:1px;margin-bottom:4px">${code}</div>
+      <div style="font-size:20px;font-weight:800;color:var(--black);margin-bottom:8px">${name}</div>
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--black)">${status}</div>
+    `;
+    modal.style.display = 'block';
+    overlay.style.display = 'block';
+  }
+  function closeModal() {
+    document.getElementById('node-modal').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
+  }
+
+  // Init
+  generateCalendar();
+</script>
+</body>
+</html>
